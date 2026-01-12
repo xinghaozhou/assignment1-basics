@@ -517,14 +517,14 @@ args = parser.parse_args()
 
 def train():    
     import time as time
+    from tqdm import tqdm
 
-    breakpoint()
     device = args.device
     model = transformer_lm(args.vocab_size, args.d_model, args.context_length, args.num_layers, args.num_heads, args.d_ff, args.rope_theta).to(device)
     optim = AdamW(model.parameters(), betas=tuple(args.betas), eps=args.eps, weight_decay=args.weight_decay, lr=args.lr) # Put the model.params in Adam
 
     training_set = np.memmap(args.train, mode='r', dtype=np.int32)
-    val_set = np.memmap(args.val, model='r', dtype=np.int32)
+    val_set = np.memmap(args.val, mode='r', dtype=np.int32)
 
     ce = CrossEntropy()
     
@@ -532,7 +532,7 @@ def train():
     model.train() # Declare it is training now
     # Training loop 
     iteration = args.iteration
-    for t in range(iteration):
+    for t in tqdm(range(iteration)):
         optim.zero_grad()
 
         x, gt = run_get_batch(training_set, args.batch_size, args.context_length, args.device)
@@ -571,6 +571,8 @@ def train():
                 # Back to Train
                 model.train()
 
+if __name__ == "__main__":
+    train()
 
 
 
