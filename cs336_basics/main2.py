@@ -116,7 +116,7 @@ def run_train_bpe(
 
     with open("merges.txt", "w") as f:
         for a, b in lst:
-            f.write(f"{a.decode('utf-8')} {b.decode('utf-8')}\n")
+            f.write(repr((a, b)) + "\n") # Need to write this in bytes version in order to encode later. .....
 
     mst_longest_key = max(
         vocab.items(),

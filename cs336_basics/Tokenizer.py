@@ -40,6 +40,7 @@ class Tokenizer:
             out = ast.literal_eval(line)
             merges.append(out)
 
+
         tokenizer = Tokenizer(vocab, merges, special_tokens)
 
         return tokenizer
@@ -103,24 +104,19 @@ class Tokenizer:
         return encoding_lst
 
     def encode_iterable(self, iterable: Iterable[str]) -> Iterator[int]:
-
         PAT = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
-
         special_token_pat = "|".join(re.escape(tok) for tok in self.special_tokens)
         
-        encoding_lst = []
 
-        for iter in iterable:
-            lines = re.split(f"({special_token_pat})", iter)
+        for it in iterable:
+            lines = re.split(f"({special_token_pat})", it)
 
             for line in lines:
                 # If there is special tokens, just skip
                 if line in self.special_tokens:
                     line = line.encode('utf-8')
-                    encoding_lst.append(self.rev_vocab[line])
+                    yield self.rev_vocab[line] # using yield as "computer and deliver"
                     continue
-
-
 
                 matches = re.finditer(PAT, line)
 
@@ -148,9 +144,8 @@ class Tokenizer:
 
                 # After these, all the elem in tok will can be looked up through dict
                 for t in tok:
-                    encoding_lst.append(self.rev_vocab[t])
+                    yield self.rev_vocab[t] # using yield as "computer and deliver"
 
-        return iter(encoding_lst)
 
     
     def decode(self, ids: list[int]) -> str:
@@ -167,8 +162,28 @@ class Tokenizer:
         return output
 
 if __name__ == "__main__":
-    tok = Tokenizer.from_files("/Users/xinghaozhou/Desktop/cs336/assignment1-basics/cs336_basics/ts_vocab_wrong.json", "/Users/xinghaozhou/Desktop/cs336/assignment1-basics/cs336_basics/ts_merges_wrong.txt", ["<|endoftext|>", "<|endoftext|><|endoftext|>"])
-    print(tok.decode(tok.encode('Hello, how <|endoftext|><|endoftext|> are you?<|endoftext|>')))
+    tok = Tokenizer.from_files("/Users/xinghaozhou/Desktop/cs336/assignment1-basics/cs336_basics/vocab.json", "/Users/xinghaozhou/Desktop/cs336/assignment1-basics/cs336_basics/merges.txt", ["<|endoftext|>"])
+
+    import numpy as np
+    from tqdm.auto import tqdm
+    txt_path = "/Users/xinghaozhou/Desktop/cs336/assignment1-basics/data/TinyStoriesV2-GPT4-valid.txt"
+    bin_path = "TinyStoriesV2-GPT4-valid.bin"
+
+    with open(txt_path, "r", encoding="utf-8") as f:
+        text = f.read()   
+
+    count = 0
+
+    with open(bin_path, "wb") as out_f:
+        for token_id in tqdm(tok.encode_iterable([text])):
+            count += 1
+            out_f.write(np.int32(token_id).tobytes())
+            if count % 10 == 0:
+                print(count)
+
+
+
+    
     #tok.encode('')
 
 

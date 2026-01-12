@@ -500,7 +500,7 @@ parser.add_argument("--d_ff", help="dimension of feed-forward network", type=int
 parser.add_argument("--rope_theta", help="theta in RoPE", type=float)
 
 # Optimizer parts
-parser.add_argument("--betas", help="betas of AdamW", type=float, default=(0.9, 0.95))
+parser.add_argument("--betas", help="betas of AdamW", type=float, default=(0.9, 0.95), nargs=2)
 parser.add_argument("--eps", help="eps of AdamW", type=float)
 parser.add_argument("--weight_decay", help="weight decay of AdamW", type=float)
 parser.add_argument("--lr", help="learning rate of AdamW", type=float)
@@ -518,6 +518,7 @@ args = parser.parse_args()
 def train():    
     import time as time
 
+    breakpoint()
     device = args.device
     model = transformer_lm(args.vocab_size, args.d_model, args.context_length, args.num_layers, args.num_heads, args.d_ff, args.rope_theta).to(device)
     optim = AdamW(model.parameters(), betas=tuple(args.betas), eps=args.eps, weight_decay=args.weight_decay, lr=args.lr) # Put the model.params in Adam
@@ -551,7 +552,7 @@ def train():
             log_end_log = time.time()
             print(f"Iteration {t}| Time: {log_end_log - start:.2f}| Train Loss: {loss.item():.4f}")
 
-        if args.val_step is not None:
+        if args.val_step and args.val is not None:
             if t % args.val_step == 0:
                 model.eval()
                 log_end_val = time.time()
