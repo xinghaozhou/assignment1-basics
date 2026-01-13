@@ -46,7 +46,7 @@ class Embedding(nn.Module):
         # Important: different from Linear Layer, we don't need linear transformation here
         self.num_embeddings = num_embeddings
         self.embeddings_dim = embeddings_dim
-        self.learnable_weight = nn.Parameter(torch.empty(num_embeddings, embeddings_dim), device=device, dtype=dtype)
+        self.learnable_weight = nn.Parameter(torch.empty(num_embeddings, embeddings_dim, device=device, dtype=dtype))
         
 
         with torch.no_grad():
@@ -75,7 +75,7 @@ class RMSnorm(nn.Module):
         self.eps = eps
 
         with torch.no_grad():
-            self.learnable_weight = nn.Parameter(torch.ones(d_model), device=device, dtype=dtype) # gi
+            self.learnable_weight = nn.Parameter(torch.ones(d_model, device=device, dtype=dtype)) # gi
 
 
     def forward(self, x: torch.Tensor):
@@ -195,9 +195,9 @@ class SwiGLU(nn.Module):
         self.d_ff = d_ff
 
         with torch.no_grad():
-            self.w1_weight = nn.Parameter(torch.empty(d_ff, d_model), device=device, dtype=dtype)
-            self.w2_weight = nn.Parameter(torch.empty(d_model, d_ff), device=device, dtype=dtype)
-            self.w3_weight = nn.Parameter(torch.empty(d_ff, d_model), device=device, dtype=dtype)
+            self.w1_weight = nn.Parameter(torch.empty(d_ff, d_model, device=device, dtype=dtype))
+            self.w2_weight = nn.Parameter(torch.empty(d_model, d_ff, device=device, dtype=dtype))
+            self.w3_weight = nn.Parameter(torch.empty(d_ff, d_model, device=device, dtype=dtype))
 
     def forward(self, 
                 in_features: Float[Tensor, " ... d_model"]):
@@ -242,16 +242,16 @@ class CausalMultiHeadSelfAttention(nn.Module):
         self.d_k = d_model // num_heads
 
         self.q_proj_weight = nn.Parameter(
-            torch.empty(num_heads * self.d_k, d_model), device=device, dtype=dtype
+            torch.empty(num_heads * self.d_k, d_model, device=device, dtype=dtype)
         )
         self.k_proj_weight = nn.Parameter(
-            torch.empty(num_heads * self.d_k, d_model), device=device, dtype=dtype
+            torch.empty(num_heads * self.d_k, d_model, device=device, dtype=dtype)
         )
         self.v_proj_weight = nn.Parameter(
-            torch.empty(num_heads * self.d_k, d_model), device=device, dtype=dtype
+            torch.empty(num_heads * self.d_k, d_model, device=device, dtype=dtype)
         )
         self.o_proj_weight = nn.Parameter(
-            torch.empty(d_model, num_heads * self.d_k), device=device, dtype=dtype
+            torch.empty(d_model, num_heads * self.d_k, device=device, dtype=dtype)
         )
 
         if theta is not None and max_seq_len is not None:
@@ -314,14 +314,15 @@ class RotaryPositionalEmbedding(nn.Module):
         self.max_seq_len = max_seq_len
 
         inv_freq = 1.0 / (theta ** (torch.arange(0, d_k, 2) / d_k))
-        self.register_buffer("inv_freq", inv_freq, device=device)
+        self.register_buffer("inv_freq", inv_freq)
       
 
 
     def forward(self, x: torch.Tensor, token_positions: torch.Tensor) -> torch.Tensor:
+        device = x.device
         token_positions = rearrange(token_positions, "... pos -> ... pos 1")
 
-        theta = token_positions* self.inv_freq[None:, ] 
+        theta = (token_positions* self.inv_freq[None:, ]).to(device) 
         cos = torch.cos(theta)
         sin = torch.sin(theta)
 
@@ -416,21 +417,23 @@ class transformer_lm(nn.Module):
         return x
     
 def run_get_batch(
-    dataset: npt.NDArray, batch_size: int, context_length: int, device: str
+    data: np.memmap, batch_size: int, context_length: int, device: str
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    data = torch.load(dataset)
+    N = len(data)
 
-    data = data.to(device)
+    ix = np.random.randint(
+        0,
+        N - context_length - 1,
+        size=(batch_size,)
+    )
 
-    n = data.size(0)
+    x = np.stack([data[int(i):int(i)+context_length] for i in ix])
+    y = np.stack([data[int(i)+1:int(i)+1+context_length] for i in ix])
 
-    start_point = torch.randint(low=0, high= n - context_length, size=(batch_size,), device=device)
-    offset = torch.arange(0, context_length)
+    x = torch.from_numpy(x).long().to(device)
+    y = torch.from_numpy(y).long().to(device)
 
-    first_pair = (start_point[:, None] + offset[None, :]).to(device) # Make [b, context_len] first pair
-    second_pair = (start_point[:, None] + offset[None, :] + 1).to(device) # Make [b,  context_len] second pair
-
-    return (first_pair, second_pair)
+    return x, y
 
 
 
@@ -546,11 +549,12 @@ def train():
         optim.step()
 
         if t % args.save_step == 0:
-            save_checkpoint(model, optim, t, args.output)
+            output_dir = f"{args.output}_{t}"
+            save_checkpoint(model, optim, t, output_dir)
 
         if t % args.logging_step ==0:
             log_end_log = time.time()
-            print(f"Iteration {t}| Time: {log_end_log - start:.2f}| Train Loss: {loss.item():.4f}")
+            print(f"Iteration {t}| Time: {log_end_log - start:.2f}| Train Loss: {(loss.item() * args.context_length):.4f}")
 
         if args.val_step and args.val is not None:
             if t % args.val_step == 0:
@@ -566,21 +570,28 @@ def train():
 
                     loss_val = ce(y_val, gt_val)
 
-                    print(f"Iteration {t}| Time: {log_end_val - start:.2f}| Val Loss: {loss_val.item():.4f}")
+                    print(f"Iteration {t}| Time: {log_end_val - start:.2f}| Val Loss: {(loss.item() * args.context_length):.4f}")
 
                 # Back to Train
                 model.train()
 
+    output_dir = f"{args.output}_final"
+    save_checkpoint(model, optim, t, output_dir)
+    
+    if args.val is not None:
+      model.eval()
+      with torch.no_grad():
+          x_val, gt_val = run_get_batch(val_set, args.batch_size, args.context_length, args.device)
+          x_val.to(device)
+          gt_val.to(device)
+
+          y_val = model(x_val)
+
+          loss_val = ce(y_val, gt_val)
+
+          print(f"Iteration End| Val Loss: {(loss_val.item() * args.context_length):.4f}")
+
+
 if __name__ == "__main__":
     train()
-
-
-
-
-
-
-
-
-
-        
 
