@@ -1,0 +1,21 @@
+!uv run python train.py \
+  --device cuda \
+  --train /content/drive/MyDrive/cs336_p1_data/TinyStoriesV2-GPT4-valid.bin \
+  --val /content/drive/MyDrive/cs336_p1_data/TinyStoriesV2-GPT4-valid.bin \
+  --val_step 500 \
+  --vocab_size 10000 \
+  --context_length 256 \
+  --d_model 512 \
+  --d_ff 1344 \
+  --rope_theta 10000 \
+  --num_layers 4 \
+  --num_heads 16 \
+  --lr 3e-4 \
+  --betas 0.9 0.999 \
+  --weight_decay 0.01 \
+  --eps 1e-8 \
+  --iteration 1000 \
+  --batch_size 32 \
+  --save_step 500 \
+  --output /content/drive/MyDrive/cs336_p1_data/ckpt \
+  --logging_step 100
