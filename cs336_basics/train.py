@@ -548,7 +548,7 @@ def train():
         loss.backward()
         optim.step()
 
-        if t % args.save_step == 0:
+        if args.save_step is not None and t % args.save_step == 0:
             output_dir = f"{args.output}_{t}"
             save_checkpoint(model, optim, t, output_dir)
 
