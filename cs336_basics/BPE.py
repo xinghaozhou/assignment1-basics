@@ -6,6 +6,8 @@ import time, psutil, os
 from threading import Thread
 import json
 
+from common import gpt2_bytes_to_unicode
+
 process = psutil.Process(os.getpid())
 peak_mem = 0
 running = True
@@ -65,11 +67,9 @@ def run_train_bpe(
 
     pre_tok: dict[str, int] = {}
 
-
     for elem in pre_tok_list:
         for k, v in elem.items():
             pre_tok[k] = pre_tok.get(k, 0) + v
-
 
     tok: dict[tuple[bytes], int] = {}
     for k, v in pre_tok.items():
@@ -110,13 +110,37 @@ def run_train_bpe(
     for i, merged_t in enumerate(lst):
         vocab[index + i] = merged_t[0] + merged_t[1]
 
-    vocab_out = {i: v.decode("latin1") for i, v in vocab.items()}
-    with open("vocab.json", "w") as f:
+
+    vocab_out = dict()
+    b2u = gpt2_bytes_to_unicode()
+    for i, bs in vocab.items():
+        s = ""
+        for b in bs:
+            s += b2u[b]
+        vocab_out[i] = s
+
+    new_lst = []
+    for a, b in lst:
+        new_a = ""
+        new_b = ""
+        for bt in a:
+            new_a += b2u[bt] 
+
+        for bt in b:
+            new_b += b2u[bt]
+        
+        new_lst.append((new_a, new_b))
+    lst = new_lst
+
+    with open("TinyStoriesV2-GPT4-train-vocab.json", "w") as f:
         json.dump(vocab_out, f, ensure_ascii=False, indent=2)
 
-    with open("merges.txt", "w") as f:
-        for a, b in lst:
-            f.write(repr((a, b)) + "\n") # Need to write this in bytes version in order to encode later. .....
+    with open("TinyStoriesV2-GPT4-train-merges.txt", "w") as f:
+        for a, b in lst:              # a, b: unicode string tokens
+            f.write(
+                a + " " +
+                b + "\n"
+            ) # Need to write this in bytes version in order to encode later. .....
 
     mst_longest_key = max(
         vocab.items(),
@@ -200,7 +224,7 @@ if __name__ == "__main__":
     t = Thread(target=monitor)
     t.start()
     start = time.time()
-    run_train_bpe("/Users/xinghaozhou/Desktop/cs336/assignment1-basics/data/TinyStoriesV2-GPT4-valid.txt", 10000, ['<|endoftext|>'])
+    run_train_bpe("/Users/xinghaozhou/Desktop/cs336/assignment1-basics/data/TinyStoriesV2-GPT4-train.txt", 10000, ['<|endoftext|>'])
     end = time.time()
 
     running = False
