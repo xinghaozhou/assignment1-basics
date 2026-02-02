@@ -1,0 +1,26 @@
+uv run train.py \
+  --device cuda \
+  --train /data/yaxuanli/ltu/cache/cache/assignment1-basics_me/cs336_basics/TinyStoriesV2-GPT4-train.bin \
+  --val /data/yaxuanli/ltu/cache/cache/assignment1-basics_me/cs336_basics/TinyStoriesV2-GPT4-valid.bin \
+  --val_batch_size 10 \
+  --val_step 500 \
+  --vocab_size 10000 \
+  --context_length 256 \
+  --d_model 512 \
+  --d_ff 1344 \
+  --rope_theta 10000 \
+  --num_layers 4 \
+  --num_heads 16 \
+  --max_lr 1e-3 \
+  --min_lr 1e-4 \
+  --warmup_iters 500 \
+  --cosine_cycle_iters 19800 \
+  --max_l2_norm 1.0 \
+  --betas 0.9 0.999 \
+  --weight_decay 0.01 \
+  --eps 1e-8 \
+  --iteration 10000 \
+  --batch_size 64 \
+  --save_step 500 \
+  --output ./ \
+  --logging_step 100
