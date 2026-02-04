@@ -12,7 +12,7 @@ class CrossEntropy(nn.Module):
 
         targets_oh = nn.functional.one_hot(
             targets, num_classes=inputs.size(-1)
-        ).to(dtype)
+        )
 
         # numerical stability
         inputs = inputs - inputs.max(dim=-1, keepdim=True).values

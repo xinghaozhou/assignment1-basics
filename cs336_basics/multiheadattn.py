@@ -15,9 +15,11 @@ class CausalMultiHeadSelfAttention(nn.Module):
                 use_rope: bool = False,
                 theta: float | None = None,
                 max_seq_len: int | None = None,
-                device= None,
-                dtype = None):
+                device: str | None = None,
+                dtype: torch.dtype | None = None):
         super().__init__()
+
+        kwargs = {'device': device, 'dtype': dtype}
 
         self.d_model = d_model
         self.num_heads = num_heads
@@ -25,23 +27,23 @@ class CausalMultiHeadSelfAttention(nn.Module):
         self.use_rope = use_rope
 
         self.q_proj_weight = Linear(
-            self.d_k * num_heads, d_model,  device=device, dtype=dtype
+            self.d_k * num_heads, d_model, **kwargs
         )
         
         self.k_proj_weight = Linear(
-            self.d_k * num_heads, d_model, device=device, dtype=dtype
+            self.d_k * num_heads, d_model, **kwargs
         )
         self.v_proj_weight = Linear(
-            self.d_k * num_heads, d_model, device=device, dtype=dtype
+            self.d_k * num_heads, d_model, **kwargs
         )
         self.o_proj_weight = Linear(
-            num_heads * self.d_k, d_model, device=device, dtype=dtype
+            num_heads * self.d_k, d_model, **kwargs
         )
 
         if use_rope:
             self.theta = theta
             self.max_seq_len = max_seq_len
-            self.RoPE = RotaryPositionalEmbedding(theta=self.theta, d_k = self.d_k, max_seq_len=self.max_seq_len, device=device)
+            self.RoPE = RotaryPositionalEmbedding(theta=self.theta, d_k = self.d_k, max_seq_len=self.max_seq_len, **kwargs)
 
     def forward(self, 
                 in_features: Float[Tensor, " ... sequence_length d_in"], 

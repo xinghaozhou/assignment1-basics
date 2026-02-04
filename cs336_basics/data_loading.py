@@ -5,17 +5,20 @@ from typing import Tuple
 
 
 def get_batch(
-    dataset: npt.NDArray, batch_size: int, context_length: int, device: str
+    dataset: npt.NDArray, 
+    batch_size: int, 
+    context_length: int, 
+    device: str | None = None, 
+    dtype: torch.dtype | None = None
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    device = "cpu"
-    dataset = torch.tensor(dataset).to(device)
+    dataset = torch.tensor(dataset, device=device, dtype=dtype)
     n = dataset.size(0)
 
-    start_point = torch.randint(low = 0, high = n - context_length, size=(batch_size,)).to(device) # Sampling B starting points from [1, n-m)
+    start_point = torch.randint(low = 0, high = n - context_length, size=(batch_size,), device=device, dtype=dtype) # Sampling B starting points from [1, n-m)
     
-    offset = torch.arange(context_length).to(device) # Make context_length offset
+    offset = torch.arange(context_length, device=device, dtype=dtype) # Make context_length offset
 
-    idx = (start_point[:, None] + offset[None, :]).to(device) # Make [b, context_len] first pair
+    idx = (start_point[:, None] + offset[None, :]) # Make [b, context_len] first pair
     
     x = dataset[idx]
     y = dataset[idx + 1]

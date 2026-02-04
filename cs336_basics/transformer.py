@@ -17,9 +17,13 @@ class transformer_block(nn.Module):
                  num_heads: int, 
                  d_ff: int,
                  theta: float | None = None,
-                 max_seq_len: int | None = None
+                 max_seq_len: int | None = None,
+                 device: str | None = None,
+                 dtype: torch.dtype | None = None
                  ):
         super().__init__()
+
+        kwargs = {'device': device, 'dtype': dtype}
 
         self.theta = theta
         self.max_seq_len = max_seq_len
@@ -29,10 +33,10 @@ class transformer_block(nn.Module):
         if theta:
             self.use_rope = True
 
-        self.attn = CausalMultiHeadSelfAttention(d_model=d_model, num_heads=num_heads, theta=theta, max_seq_len=max_seq_len, use_rope=self.use_rope)
-        self.ln1 = RMSnorm(d_model=d_model)
-        self.ln2 = RMSnorm(d_model=d_model)
-        self.ffn = SwiGLU(d_model=d_model, d_ff=d_ff)        
+        self.attn = CausalMultiHeadSelfAttention(d_model=d_model, num_heads=num_heads, theta=theta, max_seq_len=max_seq_len, use_rope=self.use_rope, )
+        self.ln1 = RMSnorm(d_model=d_model, **kwargs)
+        self.ln2 = RMSnorm(d_model=d_model, **kwargs)
+        self.ffn = SwiGLU(d_model=d_model, d_ff=d_ff, **kwargs)        
 
 
     def forward(self, 
@@ -64,18 +68,24 @@ class transformer_lm(nn.Module):
                  num_layers: int, 
                  num_heads: int, 
                  d_ff: int,
-                 rope_theta: float,):
+                 rope_theta: float,
+                 device: str | None = None,
+                 dtype: torch.dtype | None = None
+                 ):
         super().__init__()
-        self.token_embedding = Embedding(num_embeddings=vocab_size, embeddings_dim=d_model) # Did one hot for me 
+
+        kwargs = {'device': device, 'dtype': dtype}
+
+        self.token_embedding = Embedding(num_embeddings=vocab_size, embeddings_dim=d_model, **kwargs) # Did one hot for me 
 
         self.num_layers = num_layers
         self.layers = nn.ModuleList()
         
         for _ in range(num_layers):
-            self.layers.append(transformer_block(d_model=d_model, num_heads=num_heads, d_ff=d_ff, theta=rope_theta, max_seq_len=context_length))
+            self.layers.append(transformer_block(d_model=d_model, num_heads=num_heads, d_ff=d_ff, theta=rope_theta, max_seq_len=context_length, **kwargs))
 
-        self.ln_final = RMSnorm(d_model=d_model)
-        self.lm_head = nn.Linear(d_model, vocab_size, bias=False)
+        self.ln_final = RMSnorm(d_model=d_model, **kwargs)
+        self.lm_head = Linear(d_model, vocab_size, **kwargs)
         self.softmax = Softmax(dim=-1)
 
     def forward(self, in_indices: Int[Tensor, " batch_size sequence_length"]):

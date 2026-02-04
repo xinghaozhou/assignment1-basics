@@ -164,7 +164,7 @@ class Tokenizer:
         return output
 
 if __name__ == "__main__":
-    tok = Tokenizer.from_files("/Users/xinghaozhou/Desktop/cs336/assignment1-basics/cs336_basics/vocab.json", "/Users/xinghaozhou/Desktop/cs336/assignment1-basics/cs336_basics/merges.txt", ["<|endoftext|>"])
+    tok = Tokenizer.from_files("/Users/xinghaozhou/Desktop/cs336/assignment1-basics/cs336_basics/TinyStoriesV2-GPT4-train-vocab.json", "/Users/xinghaozhou/Desktop/cs336/assignment1-basics/cs336_basics/TinyStoriesV2-GPT4-train-merges.txt", ["<|endoftext|>"])
 
     import numpy as np
     from tqdm.auto import tqdm
@@ -180,9 +180,6 @@ if __name__ == "__main__":
         for token_id in tqdm(tok.encode_iterable([text])):
             count += 1
             out_f.write(np.int32(token_id).tobytes())
-            if count % 10 == 0:
-                print(count)
-
 
 
     

@@ -5,7 +5,6 @@ from typing import Optional, Tuple
 class AdamW(torch.optim.Optimizer):
     def __init__(self, params, betas, eps, weight_decay, lr=1e-3):
 
-
         if lr < 0:
             raise ValueError(f"Invalid learning rate: {lr}")
 

@@ -30,12 +30,15 @@ class Softmax(nn.Module):
 class SwiGLU(nn.Module):
     def __init__(self, d_model: int, d_ff: int, device=None, dtype=None):
         super().__init__()
+
+        kwargs = {'device': device, 'dtype': dtype}
+
         self.d_model = d_model
         self.d_ff = d_ff
 
-        self.w1_weight = Linear(d_model, d_ff, device=device, dtype=dtype)
-        self.w2_weight = Linear(d_ff, d_model, device=device, dtype=dtype)
-        self.w3_weight = Linear(d_model, d_ff, device=device, dtype=dtype)
+        self.w1_weight = Linear(d_model, d_ff, **kwargs)
+        self.w2_weight = Linear(d_ff, d_model, **kwargs)
+        self.w3_weight = Linear(d_model, d_ff, **kwargs)
 
     def forward(self, 
                 in_features: Float[Tensor, " ... d_model"]):

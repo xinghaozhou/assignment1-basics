@@ -3,18 +3,27 @@ import torch.nn as nn
 from einops import rearrange, einsum
 
 class RotaryPositionalEmbedding(nn.Module):
-    def __init__(self, theta: float, d_k: int, max_seq_len: int, device= None):
+    def __init__(self, 
+                 theta: float, 
+                 d_k: int, 
+                 max_seq_len: int, 
+                 device: str | None = None,
+                 dtype: torch.dtype | None = None):
         super().__init__()
+
         self.theta = torch.tensor(theta)
         self.d_k = d_k
         self.max_seq_len = max_seq_len
 
-        inv_freq = 1.0 / (theta ** (torch.arange(0, d_k, 2) / d_k))
+        inv_freq = 1.0 / (theta ** (torch.arange(0, d_k, 2, device=device, dtype=dtype) / d_k))
         self.register_buffer("inv_freq", inv_freq, persistent=False)
       
 
 
     def forward(self, x: torch.Tensor, token_positions: torch.Tensor) -> torch.Tensor:
+        # Sanity Check
+        assert x.device == self.inv_freq.device
+
         device = x.device
         token_positions = token_positions[..., None].to(device)
 

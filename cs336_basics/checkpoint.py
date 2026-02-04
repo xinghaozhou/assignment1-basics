@@ -7,7 +7,10 @@ import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
 
-def save_checkpoint(model:torch.nn.Module, optimizer: torch.optim.Optimizer, iteration: int, out: str | os.PathLike | BinaryIO | IO[bytes]):
+def save_checkpoint(model:torch.nn.Module, 
+                    optimizer: torch.optim.Optimizer, 
+                    iteration: int, 
+                    out: str | os.PathLike | BinaryIO | IO[bytes]):
 
     for i in range(1, iteration+1):
         model_params = model.state_dict()
