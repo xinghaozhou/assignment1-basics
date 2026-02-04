@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from cs336_basics.loss import CrossEntropy
-from cs336_basics.data_loading import run_get_batch
+from cs336_basics.data_loading import get_batch
 
 @torch.no_grad()
 def evaluate(
@@ -14,7 +14,7 @@ def evaluate(
     loss_val_cum = 0
 
     for _ in range(val_batch_size): # get mu.t
-        x_val, gt_val = run_get_batch(data, val_batch_size, context_length, device)
+        x_val, gt_val = get_batch(data, val_batch_size, context_length, device)
         x_val = x_val.to(device)
         gt_val = gt_val.to(device)
 

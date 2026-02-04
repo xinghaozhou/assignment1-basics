@@ -1,22 +1,57 @@
 import torch
 import numpy as np
+import numpy.typing as npt
+from typing import Tuple
 
 
-def run_get_batch(
-    data: np.memmap, batch_size: int, context_length: int, device: str
+def get_batch(
+    dataset: npt.NDArray, batch_size: int, context_length: int, device: str
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    N = len(data)
+    device = "cpu"
+    dataset = torch.tensor(dataset).to(device)
+    n = dataset.size(0)
 
-    ix = np.random.randint(
-        0,
-        N - context_length - 1,
-        size=(batch_size,)
-    )
+    start_point = torch.randint(low = 0, high = n - context_length, size=(batch_size,)).to(device) # Sampling B starting points from [1, n-m)
+    
+    offset = torch.arange(context_length).to(device) # Make context_length offset
 
-    x = np.stack([data[int(i):int(i)+context_length] for i in ix])
-    y = np.stack([data[int(i)+1:int(i)+1+context_length] for i in ix])
+    idx = (start_point[:, None] + offset[None, :]).to(device) # Make [b, context_len] first pair
+    
+    x = dataset[idx]
+    y = dataset[idx + 1]
 
-    x = torch.from_numpy(x).long().to(device)
-    y = torch.from_numpy(y).long().to(device)
+
+
+
+
+    # N = len(data)
+
+    # ix = np.random.randint(
+    #     0,
+    #     N - context_length - 1,
+    #     size=(batch_size,)
+    # )
+
+    # x = np.stack([data[int(i):int(i)+context_length] for i in ix])
+    # y = np.stack([data[int(i)+1:int(i)+1+context_length] for i in ix])
+
+    # x = torch.from_numpy(x).long().to(device)
+    # y = torch.from_numpy(y).long().to(device)
 
     return x, y
+
+# def get_batch(
+#     dataset: npt.NDArray,
+#     batch_size: int,
+#     context_length: int, device: str
+# ) -> Tuple[torch.Tensor, torch.Tensor]:
+#     begin = np.random.randint(0, len(dataset) - context_length, size=batch_size)
+
+#     input = np.stack([dataset[bi : bi + context_length] for bi in begin])
+#     label = np.stack([dataset[bi + 1 : bi + context_length + 1] for bi in begin])
+
+#     input_tensor = torch.tensor(input, dtype=torch.long, device=device)
+#     label_tensor = torch.tensor(label, dtype=torch.long, device=device)
+
+#     return input_tensor, label_tensor
+

@@ -27,7 +27,7 @@ from cs336_basics.scheduler import lr_schedule
 from cs336_basics.gradient_clip import gradient_clipping
 from cs336_basics.loss import CrossEntropy
 from cs336_basics.checkpoint import save_checkpoint, load_checkpoint
-from cs336_basics.data_loading import run_get_batch
+from cs336_basics.data_loading import get_batch
 from cs336_basics.evaluation import evaluate
 
 
@@ -100,7 +100,7 @@ def train():
     for t in tqdm(range(iteration)):
         optim.zero_grad()
 
-        x, gt = run_get_batch(training_set, args.batch_size, args.context_length, args.device)
+        x, gt = get_batch(training_set, args.batch_size, args.context_length, args.device)
         x = x.to(device)
         gt = gt.to(device)
 
@@ -140,7 +140,7 @@ def train():
     if args.val is not None:
       model.eval()
       with torch.no_grad():
-          x_val, gt_val = run_get_batch(val_set, args.batch_size, args.context_length, args.device)
+          x_val, gt_val = get_batch(val_set, args.batch_size, args.context_length, args.device)
           x_val.to(device)
           gt_val.to(device)
 

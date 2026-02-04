@@ -6,7 +6,7 @@ import time, psutil, os
 from threading import Thread
 import json
 
-from common import gpt2_bytes_to_unicode
+from cs336_basics.b2u import gpt2_bytes_to_unicode
 
 process = psutil.Process(os.getpid())
 peak_mem = 0

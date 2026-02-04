@@ -10,7 +10,7 @@ class RotaryPositionalEmbedding(nn.Module):
         self.max_seq_len = max_seq_len
 
         inv_freq = 1.0 / (theta ** (torch.arange(0, d_k, 2) / d_k))
-        self.register_buffer("inv_freq", inv_freq)
+        self.register_buffer("inv_freq", inv_freq, persistent=False)
       
 
 

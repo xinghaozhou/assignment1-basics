@@ -6,7 +6,7 @@ import torch
 from cs336_basics.linear import Linear
 from cs336_basics.rms import RMSnorm
 from cs336_basics.FFN import SwiGLU
-from cs336_basics.multiheadattn import CausalMultiHeadSelfAttention
+from cs336_basics.multiheadattn_test import CausalMultiHeadSelfAttention
 from cs336_basics.embedding import Embedding
 from cs336_basics.softmax import Softmax
 
@@ -24,7 +24,12 @@ class transformer_block(nn.Module):
         self.theta = theta
         self.max_seq_len = max_seq_len
 
-        self.attn = CausalMultiHeadSelfAttention(d_model=d_model, num_heads=num_heads, theta=theta, max_seq_len=max_seq_len)
+        self.use_rope = False # use rope when theta provided
+
+        if theta:
+            self.use_rope = True
+
+        self.attn = CausalMultiHeadSelfAttention(d_model=d_model, num_heads=num_heads, theta=theta, max_seq_len=max_seq_len, use_rope=self.use_rope)
         self.ln1 = RMSnorm(d_model=d_model)
         self.ln2 = RMSnorm(d_model=d_model)
         self.ffn = SwiGLU(d_model=d_model, d_ff=d_ff)        
