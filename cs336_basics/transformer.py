@@ -6,7 +6,7 @@ import torch
 from cs336_basics.linear import Linear
 from cs336_basics.rms import RMSnorm
 from cs336_basics.FFN import SwiGLU
-from cs336_basics.multiheadattn_test import CausalMultiHeadSelfAttention
+from cs336_basics.multiheadattn import CausalMultiHeadSelfAttention
 from cs336_basics.embedding import Embedding
 from cs336_basics.softmax import Softmax
 

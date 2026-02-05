@@ -6,7 +6,7 @@ from torch import Tensor
 
 from cs336_basics.rope import RotaryPositionalEmbedding
 from cs336_basics.softmax import Softmax
-from cs336_basics.linear_his import Linear 
+from cs336_basics.linear import Linear 
 from cs336_basics.scaled_dot_product_attention import scaled_dot_product_attention
 
 class CausalMultiHeadSelfAttention(nn.Module):
