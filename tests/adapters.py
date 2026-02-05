@@ -19,7 +19,7 @@ import torch.nn as nn
 from einops import rearrange, einsum
 import torch
 
-from cs336_basics.linear_his import Linear
+from cs336_basics.linear import Linear
 from cs336_basics.adamW import AdamW
 from cs336_basics.embedding import Embedding
 from cs336_basics.FFN import SiLU, SwiGLU
