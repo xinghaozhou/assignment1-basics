@@ -7,21 +7,13 @@ class CrossEntropy(nn.Module):
         super().__init__()
 
     def forward(self, inputs, targets):
-
-        dtype = inputs.dtype
-
-        targets_oh = nn.functional.one_hot(
-            targets, num_classes=inputs.size(-1)
-        )
-
         # numerical stability
         inputs = inputs - inputs.max(dim=-1, keepdim=True).values
 
+        target_logit = torch.gather(inputs, -1, targets[..., None]).squeeze(-1)
+
         # logsumexp (denominator)
         softmax_bottom = torch.log(torch.exp(inputs).sum(dim=-1))
-
-        # target logit (numerator, already in log space)
-        target_logit = (inputs * targets_oh).sum(dim=-1)
 
         # cross entropy
         out = softmax_bottom - target_logit
