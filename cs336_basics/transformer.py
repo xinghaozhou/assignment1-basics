@@ -33,7 +33,7 @@ class transformer_block(nn.Module):
         if theta:
             self.use_rope = True
 
-        self.attn = CausalMultiHeadSelfAttention(d_model=d_model, num_heads=num_heads, theta=theta, max_seq_len=max_seq_len, use_rope=self.use_rope, )
+        self.attn = CausalMultiHeadSelfAttention(d_model=d_model, num_heads=num_heads, theta=theta, max_seq_len=max_seq_len, use_rope=self.use_rope, **kwargs)
         self.ln1 = RMSnorm(d_model=d_model, **kwargs)
         self.ln2 = RMSnorm(d_model=d_model, **kwargs)
         self.ffn = SwiGLU(d_model=d_model, d_ff=d_ff, **kwargs)        

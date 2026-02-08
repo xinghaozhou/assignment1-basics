@@ -365,10 +365,10 @@ def run_transformer_block(
 
     if weights is not None:
         key_map ={
-            "attn.q_proj.weight": "attn.q_proj_weight",
-            "attn.k_proj.weight": "attn.k_proj_weight",
-            "attn.v_proj.weight": "attn.v_proj_weight",
-            "attn.output_proj.weight": "attn.o_proj_weight",
+            "attn.q_proj.weight": "attn.q_proj_weight.weight",
+            "attn.k_proj.weight": "attn.k_proj_weight.weight",
+            "attn.v_proj.weight": "attn.v_proj_weight.weight",
+            "attn.output_proj.weight": "attn.o_proj_weight.weight",
 
             # layer norm / rms
             "ln1.weight": "ln1.learnable_weight",
@@ -393,10 +393,10 @@ def build_key_map(n_layers: int):
 
     for i in range(n_layers):
         # attention
-        key_map[f"layers.{i}.attn.q_proj.weight"] = f"layers.{i}.attn.q_proj_weight"
-        key_map[f"layers.{i}.attn.k_proj.weight"] = f"layers.{i}.attn.k_proj_weight"
-        key_map[f"layers.{i}.attn.v_proj.weight"] = f"layers.{i}.attn.v_proj_weight"
-        key_map[f"layers.{i}.attn.output_proj.weight"] = f"layers.{i}.attn.o_proj_weight"
+        key_map[f"layers.{i}.attn.q_proj.weight"] = f"layers.{i}.attn.q_proj_weight.weight"
+        key_map[f"layers.{i}.attn.k_proj.weight"] = f"layers.{i}.attn.k_proj_weight.weight"
+        key_map[f"layers.{i}.attn.v_proj.weight"] = f"layers.{i}.attn.v_proj_weight.weight"
+        key_map[f"layers.{i}.attn.output_proj.weight"] = f"layers.{i}.attn.o_proj_weight.weight"
 
         # layer norm / rms
         key_map[f"layers.{i}.ln1.weight"] = f"layers.{i}.ln1.learnable_weight"

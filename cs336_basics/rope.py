@@ -24,6 +24,10 @@ class RotaryPositionalEmbedding(nn.Module):
         # Sanity Check
         assert x.device == self.inv_freq.device
 
+        # In case that token_position macthes the T
+        T = x.size(-2)
+        token_positions = token_positions[..., :T]
+
         device = x.device
         token_positions = token_positions[..., None].to(device)
 

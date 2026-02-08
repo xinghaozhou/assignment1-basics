@@ -20,7 +20,7 @@ class RMSnorm(nn.Module):
 
         x = einsum(
             x, self.learnable_weight,
-            "batch seq_len d_model, d_model -> batch seq_len d_model"
+            "... d_model, d_model -> ... d_model"
         )
 
         return x.to(in_dtype)

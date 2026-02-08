@@ -22,6 +22,15 @@ class Embedding(nn.Module):
         # token_ids (b, s_length)
         # embedding matrix (vocab_size, d_model)
 
+        #token_ids = nn.functional.one_hot(token_ids, self.num_embeddings).to(self.learnable_weight.dtype) # token_ids = (B, S, vocab_size(0, 1))
+
+
+        # out = einsum(
+        #     token_ids, self.learnable_weight,
+        #     "batch seq_len vocab_size, vocab_size embedding_dim -> batch seq_len embedding_dim"
+        # )
+
+
         ## A smarter way of doing this, using indexing
         ## self.learnable_weight = [vocab_size, embeddings_dim]
         ## token_ids = [B, seq_len]
